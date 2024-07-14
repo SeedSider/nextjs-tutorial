@@ -9,6 +9,41 @@ export type User = {
   password: string;
 };
 
+export type Store = {
+  id: string;
+  user_id: string;
+  name: string;
+  address: string;
+  contact: string;
+};
+
+export type Product = {
+  id: string;
+  store_id: string;
+  registration_code: string;
+  image_url: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+};
+
+export type SaleInvoice = {
+  id: string;
+  invoice_date: string;
+  total_amount: number;
+  products: InvoiceProduct[];
+}
+
+export type InvoiceProduct = {
+  id: string;
+  invoice_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
 export type Customer = {
   id: string;
   name: string;
@@ -55,6 +90,15 @@ export type InvoicesTable = {
   status: 'pending' | 'paid';
 };
 
+export type ProductsTable = {
+  id: string;
+  image_url: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+};
+
 export type CustomersTableType = {
   id: string;
   name: string;
@@ -85,4 +129,12 @@ export type InvoiceForm = {
   customer_id: string;
   amount: number;
   status: 'pending' | 'paid';
+};
+
+export type StoreForm = {
+  id: string;
+  user_id: string;
+  name: string;
+  address: string;
+  contact: string;
 };

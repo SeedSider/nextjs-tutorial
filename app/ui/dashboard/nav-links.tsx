@@ -17,6 +17,21 @@ const links = [
     href: '/dashboard/invoices',
     icon: DocumentDuplicateIcon,
   },
+  {
+    name: 'Toko',
+    href: '/dashboard/stores',
+    icon: DocumentDuplicateIcon,
+  },
+  {
+    name: 'Produk',
+    href: '/dashboard/products',
+    icon: DocumentDuplicateIcon,
+  },
+  {
+    name: 'Transaksi',
+    href: '/dashboard/sale-invoices',
+    icon: DocumentDuplicateIcon,
+  },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
 ];
 

@@ -7,6 +7,8 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  Store,
+  ProductsTable,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -128,6 +130,54 @@ export async function fetchFilteredInvoices(
   }
 }
 
+export async function fetchFilteredProducts(
+  query: string,
+  currentPage: number,
+) {
+  noStore();
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const products = await sql<ProductsTable>`
+      SELECT
+        products.id,
+        products.image_url,
+        products.name,
+        products.description,
+        products.price,
+        products.quantity
+      FROM products
+      WHERE
+        products.name ILIKE ${`%${query}%`} OR
+        products.description ILIKE ${`%${query}%`}
+      ORDER BY products.name
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+
+    return products.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch products.');
+  }
+}
+
+export async function fetchProductsPages(query: string) {
+  noStore();
+  try {
+    const count = await sql`SELECT COUNT(*)
+    FROM products
+    WHERE
+      products.name ILIKE ${`%${query}%`}
+  `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of products.');
+  }
+}
+
 export async function fetchInvoicesPages(query: string) {
   noStore();
   try {
@@ -173,6 +223,29 @@ export async function fetchInvoiceById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
+  }
+}
+
+export async function fetchStoreByUserId(id: string) {
+  noStore();
+  try {
+    const data = await sql`
+      SELECT
+        stores.id,
+        stores.user_id,
+        stores.name,
+        stores.address,
+        stores.contact
+      FROM stores
+      WHERE stores.user_id = ${id};
+    `;
+
+    const store = data.rows;
+
+    return store[0] as Store;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch store.');
   }
 }
 

@@ -72,6 +72,84 @@ const customers = [
   },
 ];
 
+const stores = [
+  {
+    id: '1',
+    user_id: '410544b2-4001-4271-9855-fec4b6a6442a',
+    name: 'Sehat Sejahtera',
+    address: 'Jalan Kesuksesan No. 13',
+    contact: '6285223322231',
+  },
+];
+
+const products = [
+  {
+    id: '1',
+    store_id: stores[0].id,
+    name: 'Paracetamol',
+    price: 4000,
+    quantity: 10,
+    registration_code: 'abc123'
+  },
+  {
+    id: '2',
+    store_id: stores[0].id,
+    name: 'Bodrex',
+    price: 3000,
+    quantity: 5,
+    registration_code: 'abcd123'
+  },
+  {
+    id: '3',
+    store_id: stores[0].id,
+    name: 'Asam Mefenamat',
+    price: 3500,
+    quantity: 3,
+    registration_code: 'asmef123'
+  }
+];
+
+const sale_invoices = [
+  {
+    id: '1',
+    store_id: stores[0].id,
+    user_id: users[0].id,
+    invoice_date: '2024-01-06 10:22',
+    total_amount: 7000
+  },
+  {
+    id: '2',
+    store_id: stores[0].id,
+    user_id: users[0].id,
+    invoice_date: '2024-03-06 15:22',
+    total_amount: 11000
+  },
+];
+
+const invoice_products = [
+  {
+    invoice_id: sale_invoices[0].id,
+    product_id: products[2].id,
+    quantity: 2,
+    unit_price: 3500,
+    total_price: 7000
+  },
+  {
+    invoice_id: sale_invoices[1].id,
+    product_id: products[0].id,
+    quantity: 2,
+    unit_price: 4000,
+    total_price: 8000
+  },
+  {
+    invoice_id: sale_invoices[1].id,
+    product_id: products[1].id,
+    quantity: 1,
+    unit_price: 3000,
+    total_price: 3000
+  },
+];
+
 const invoices = [
   {
     customer_id: customers[0].id,
@@ -104,13 +182,13 @@ const invoices = [
     date: '2023-08-05',
   },
   {
-    customer_id: customers[7].id,
+    customer_id: customers[2].id,
     amount: 54246,
     status: 'pending',
     date: '2023-07-16',
   },
   {
-    customer_id: customers[6].id,
+    customer_id: customers[0].id,
     amount: 666,
     status: 'pending',
     date: '2023-06-27',
@@ -147,18 +225,6 @@ const invoices = [
   },
   {
     customer_id: customers[2].id,
-    amount: 8945,
-    status: 'paid',
-    date: '2023-06-18',
-  },
-  {
-    customer_id: customers[0].id,
-    amount: 8945,
-    status: 'paid',
-    date: '2023-10-04',
-  },
-  {
-    customer_id: customers[2].id,
     amount: 1000,
     status: 'paid',
     date: '2022-06-05',
@@ -180,9 +246,13 @@ const revenue = [
   { month: 'Dec', revenue: 4800 },
 ];
 
-module.exports = {
+export {
   users,
   customers,
   invoices,
   revenue,
+  sale_invoices,
+  stores,
+  products,
+  invoice_products
 };
