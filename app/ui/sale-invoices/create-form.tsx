@@ -46,7 +46,7 @@ export default function Form({ store }: {store: StoreForm}) {
 
   const incrementCartItem = (index: number) => {
     let tempCartItems = cartArray.map((item) => 
-      Number(item.product.id) === index ? {...item, quantity: item.quantity + 1} : item)
+      Number(item.product.id) === index && item.quantity <= item.product.quantity ? {...item, quantity: item.quantity + 1} : item)
     dispatchRedux(updateCart(tempCartItems)); 
   }
   const decrementCartItem = (index: number) => {
@@ -88,7 +88,7 @@ export default function Form({ store }: {store: StoreForm}) {
           </div>
           { cartArray.length === 0 ? <div className="flex-auto text-gray-400 text-sm my-5 text-center">Keranjang kosong</div> : null }
           {cartArray.map((cartItem, index) => (
-            <div className="flex rounded-lg text-sm font-medium">
+            <div className="flex rounded-lg text-sm font-medium" key={cartItem.id}>
               <div className="flex-1 mt-4 ml-4">
                 {cartItem.product.name}
               </div>
