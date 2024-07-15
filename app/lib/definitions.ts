@@ -32,13 +32,11 @@ export type SaleInvoice = {
   id: string;
   invoice_date: string;
   total_amount: number;
-  products: InvoiceProduct[];
 }
 
 export type InvoiceProduct = {
   id: string;
-  invoice_id: string;
-  product_id: string;
+  product_name: string;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -99,6 +97,13 @@ export type ProductsTable = {
   quantity: number;
 };
 
+export type SaleInvoicesTable = {
+  id: string;
+  invoice_date: string;
+  quantity: number;
+  total_amount: number;
+};
+
 export type CustomersTableType = {
   id: string;
   name: string;
@@ -138,3 +143,19 @@ export type StoreForm = {
   address: string;
   contact: string;
 };
+
+export type ProductForm = {
+  id: string;
+  image_url: string;
+  registration_code: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+};
+
+export type CartState = {
+  id: number;
+  product: ProductsTable;
+  quantity: number;
+}

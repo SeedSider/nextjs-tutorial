@@ -1,22 +1,23 @@
-'use client'
+'use client';
 
-import Link from 'next/link';
+import { ProductForm } from '@/app/lib/definitions';
 import {
-  CheckIcon,
-  ClockIcon,
   CurrencyDollarIcon,
-  UserCircleIcon,
 } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { createProduct } from '@/app/lib/actions';
+import { updateProduct } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
-import { StoreForm } from '@/app/lib/definitions';
 import { useRef } from 'react';
 
-export default function Form({ store }: {store: StoreForm}) {
+export default function EditProductForm({
+  product
+}: {
+  product: ProductForm;
+}) {
   const initialState = { message: null, errors: {} };
-  const createProductWithStoreId = createProduct.bind(null, store.id);
-  const [state, dispatch] = useFormState(createProductWithStoreId, initialState);
+  const updateProductWithId = updateProduct.bind(null, product.id);
+  const [state, dispatch] = useFormState(updateProductWithId, initialState);
   const fileInput = useRef<HTMLInputElement>(null);
 
   return (
@@ -55,6 +56,7 @@ export default function Form({ store }: {store: StoreForm}) {
                 name="registration_code"
                 type="text"
                 placeholder="Masukkan kode registrasi"
+                defaultValue={product.registration_code}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby='registration_code-error'
               />
@@ -76,6 +78,7 @@ export default function Form({ store }: {store: StoreForm}) {
                 name="name"
                 type="text"
                 placeholder="Masukkan nama"
+                defaultValue={product.name}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby='nama-error'
               />
@@ -103,6 +106,7 @@ export default function Form({ store }: {store: StoreForm}) {
                 name="description"
                 type="text"
                 placeholder="Masukkan deskripsi produk"
+                defaultValue={product.description}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby='description-error'
               />
@@ -125,6 +129,7 @@ export default function Form({ store }: {store: StoreForm}) {
                 type="number"
                 step="1"
                 placeholder="Masukkan harga produk"
+                defaultValue={product.price}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby='price-error'
               />
@@ -152,6 +157,7 @@ export default function Form({ store }: {store: StoreForm}) {
                 name="quantity"
                 type="number"
                 placeholder="Masukkan stok produk"
+                defaultValue={product.quantity}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby='quantity-error'
               />
@@ -178,7 +184,7 @@ export default function Form({ store }: {store: StoreForm}) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Product</Button>
+        <Button type="submit">Edit Product</Button>
       </div>
     </form>
   );

@@ -1,8 +1,9 @@
 'use client';
 import {
-  UserGroupIcon,
   HomeIcon,
   DocumentDuplicateIcon,
+  BuildingStorefrontIcon,
+  TagIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,26 +14,20 @@ import clsx from 'clsx';
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   {
-    name: 'Invoices',
-    href: '/dashboard/invoices',
-    icon: DocumentDuplicateIcon,
-  },
-  {
     name: 'Toko',
     href: '/dashboard/stores',
-    icon: DocumentDuplicateIcon,
+    icon: BuildingStorefrontIcon,
   },
   {
     name: 'Produk',
     href: '/dashboard/products',
-    icon: DocumentDuplicateIcon,
+    icon: TagIcon,
   },
   {
     name: 'Transaksi',
     href: '/dashboard/sale-invoices',
     icon: DocumentDuplicateIcon,
   },
-  { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
 ];
 
 export default function NavLinks() {

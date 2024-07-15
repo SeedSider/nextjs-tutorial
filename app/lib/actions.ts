@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import fs from "node:fs/promises";
+import { CartState, StoreForm } from "./definitions";
 
 const FormSchema = z.object({
     id: z.string(),
@@ -27,6 +28,7 @@ const FormProductSchema = z.object({
     image_url: z.string().nullish().optional(),
     registration_code: z.string().nullish().optional(),
     name: z.string().min(2, { message: 'Nama produk tidak boleh kosong!' }),
+    description: z.string().optional(),
     price: z.coerce
         .number()
         .gt(0, { message: 'Masukkan harga di atas Rp 0,00' }),
@@ -142,8 +144,10 @@ export async function createProduct(storeId: string, prevState: ProductState, fo
     const validatedFields = CreateProduct.safeParse({
         registration_code: formData.get('registration_code'),
         name: formData.get('name'),
+        description: formData.get('description'),
         quantity: formData.get('quantity'),
         price: formData.get('price'),
+
     });
 
     const file = formData.get("image_url") as File;
@@ -158,14 +162,14 @@ export async function createProduct(storeId: string, prevState: ProductState, fo
         };
       }
     
-    const { registration_code, name, quantity, price } = validatedFields.data;
+    const { registration_code, name, description, quantity, price } = validatedFields.data;
     const filename = `/products/${file.name}`
 
     try {
         await fs.writeFile(`./public/products/${file.name}`, buffer);
         await sql`
-        INSERT INTO products (store_id, image_url, registration_code, name, quantity, price)
-        VALUES (${storeId}, ${filename}, ${registration_code}, ${name}, ${quantity}, ${price})
+        INSERT INTO products (store_id, image_url, registration_code, name, description, quantity, price)
+        VALUES (${storeId}, ${filename}, ${registration_code}, ${name}, ${description}, ${quantity}, ${price})
     `;
     }
     catch (error) {
@@ -178,38 +182,45 @@ export async function createProduct(storeId: string, prevState: ProductState, fo
     redirect('/dashboard/products');
 }
 
-export async function updateProduct(id: string, prevState: State, formData: FormData) {
-    const validatedFields = UpdateInvoice.safeParse({
-        customerId: formData.get('customerId'),
-        amount: formData.get('amount'),
-        status: formData.get('status'),
+export async function updateProduct(id: string, prevState: ProductState, formData: FormData) {
+    const validatedFields = UpdateProduct.safeParse({
+        registration_code: formData.get('registration_code'),
+        description: formData.get('description'),
+        name: formData.get('name'),
+        quantity: formData.get('quantity'),
+        price: formData.get('price'),
     });
+
+    const file = formData.get("image_url") as File;
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
 
     if (!validatedFields.success) {
         return {
           errors: validatedFields.error.flatten().fieldErrors,
-          message: 'Missing Fields. Failed to Update Invoice.',
+          message: 'Missing Fields. Failed to Update Product.',
         };
     }
 
-    const { customerId, amount, status } = validatedFields.data;
-    const amountInCents = amount * 100;
+    const { registration_code, name, description, quantity, price } = validatedFields.data;
+    const filename = `/products/${file.name}`
 
     try {
+        await fs.writeFile(`./public/products/${file.name}`, buffer);
         await sql`
-        UPDATE invoices
-        SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+        UPDATE products
+        SET registration_code = ${registration_code}, image_url = ${filename}, name = ${name}, description = ${description}, quantity = ${quantity}, price = ${price}
         WHERE id = ${id}
     `;
     }
     catch (error) {
         return {
-            message: 'Database error: Failed to Update Invoice',
+            message: 'Database error: Failed to Update Products' + error,
         };
     }
 
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
+    revalidatePath('/dashboard/products');
+    redirect('/dashboard/products');
 }
 
 export async function deleteProduct(id: string) {
@@ -221,6 +232,47 @@ export async function deleteProduct(id: string) {
     catch (error) {
         return {
             message: 'Database error: Failed to Delete Product',
+        };
+    }
+}
+
+export async function createSaleInvoice(store:StoreForm, products: CartState[]) {
+    const date = new Date().toISOString();
+    const totalPrice = products.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+    try {
+        const query = await sql`
+            INSERT INTO sale_invoices (store_id, user_id, invoice_date, total_amount)
+            VALUES (${store.id}, ${store.user_id}, ${date}, ${totalPrice}) RETURNING id
+        `;
+
+        const invoice_id = query.rows[0].id;
+
+        for(let i = 0; i < products.length; i++) {
+            await sql`
+            INSERT INTO invoice_products (invoice_id, product_id, quantity, unit_price, total_price)
+            VALUES (${invoice_id}, ${products[i].product.id}, ${products[i].quantity}, ${products[i].product.price}, ${products[i].product.price * products[i].quantity})
+        `;
+        }
+    }
+    catch (error) {
+        return {
+            message: 'Database error: Failed to Create Product.' + error,
+        };
+    }
+
+    revalidatePath('/dashboard/sale-invoices');
+    redirect('/dashboard/sale-invoices');
+}
+
+export async function deleteSaleInvoice(id: string) {
+    try {
+        await sql`DELETE FROM sale_invoices WHERE id = ${id}`;
+        revalidatePath('/dashboard/sale-invoices');
+        return { message: 'Deleted Sale Invoice.' };
+    }
+    catch (error) {
+        return {
+            message: 'Database error: Failed to Delete Sale Invoice'  + error,
         };
     }
 }

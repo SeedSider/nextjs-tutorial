@@ -9,6 +9,10 @@ import {
   Revenue,
   Store,
   ProductsTable,
+  ProductForm,
+  SaleInvoicesTable,
+  SaleInvoice,
+  InvoiceProduct,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -178,6 +182,54 @@ export async function fetchProductsPages(query: string) {
   }
 }
 
+export async function fetchFilteredSaleInvoices(
+  query: string,
+  currentPage: number,
+) {
+  noStore();
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const sale_invoices = await sql<SaleInvoicesTable>`
+      SELECT
+        sale_invoices.id,
+        sale_invoices.invoice_date,
+        SUM(invoice_products.quantity) AS quantity,
+        sale_invoices.total_amount
+      FROM sale_invoices
+      JOIN invoice_products ON sale_invoices.id = invoice_products.invoice_id
+      WHERE
+        sale_invoices.invoice_date::text ILIKE ${`%${query}%`}
+      GROUP BY sale_invoices.id
+      ORDER BY sale_invoices.invoice_date DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+
+    return sale_invoices.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch sale_invoices.');
+  }
+}
+
+export async function fetchSaleInvoicesPages(query: string) {
+  noStore();
+  try {
+    const count = await sql`SELECT COUNT(*)
+    FROM sale_invoices
+    JOIN invoice_products ON sale_invoices.id = invoice_products.invoice_id
+    WHERE
+      sale_invoices.invoice_date::text ILIKE ${`%${query}%`}
+  `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of sale invoices.');
+  }
+}
+
 export async function fetchInvoicesPages(query: string) {
   noStore();
   try {
@@ -246,6 +298,78 @@ export async function fetchStoreByUserId(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch store.');
+  }
+}
+
+export async function fetchProductById(id: string) {
+  noStore();
+  try {
+    const data = await sql<ProductForm>`
+      SELECT
+        products.id,
+        products.image_url,
+        products.registration_code,
+        products.name,
+        products.description,
+        products.price,
+        products.quantity
+      FROM products
+      WHERE products.id = ${id};
+    `;
+
+    const product = data.rows.map((product) => ({
+      ...product,
+    }));
+
+    return product[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch product.');
+  }
+}
+
+export async function fetchSaleInvoiceById(id: string) {
+  noStore();
+  try {
+    const data = await sql<SaleInvoice>`
+      SELECT
+        sale_invoices.id,
+        sale_invoices.invoice_date,
+        sale_invoices.total_amount
+      FROM sale_invoices
+      WHERE sale_invoices.id = ${id};
+    `;
+
+    const saleInvoice = data.rows.map((saleInvoice) => ({
+      ...saleInvoice,
+    }));
+
+    return saleInvoice[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch sale invoice.');
+  }
+}
+
+export async function fetchInvoiceProductsByInvoiceId(id: string) {
+  noStore();
+  try {
+    const invoiceProducts = await sql<InvoiceProduct>`
+      SELECT
+        invoice_products.id,
+        products.name AS product_name,
+        invoice_products.quantity,
+        invoice_products.unit_price,
+        invoice_products.total_price
+      FROM invoice_products
+      JOIN products ON invoice_products.product_id = products.id
+      WHERE invoice_products.invoice_id = ${id};
+    `;
+
+    return invoiceProducts.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoice products.');
   }
 }
 

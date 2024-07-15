@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     "app/lib/placeholder-data.js",
     "scripts/seed.js"
-  ],
+, "redux/StoreProvider.tsx", "redux/slices/cartSlice.ts"  ],
   "exclude": ["node_modules"]
 }
