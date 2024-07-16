@@ -46,7 +46,7 @@ export default function Form({ store }: {store: StoreForm}) {
 
   const incrementCartItem = (index: number) => {
     let tempCartItems = cartArray.map((item) => 
-      Number(item.product.id) === index && item.quantity <= item.product.quantity ? {...item, quantity: item.quantity + 1} : item)
+      Number(item.product.id) === index && item.quantity < item.product.quantity ? {...item, quantity: item.quantity + 1} : item)
     dispatchRedux(updateCart(tempCartItems)); 
   }
   const decrementCartItem = (index: number) => {
