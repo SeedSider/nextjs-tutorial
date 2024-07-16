@@ -2,6 +2,11 @@ import { lusitana} from "@/app/ui/fonts";
 import { fetchStoreByUserId } from "@/app/lib/data";
 import { cookies } from "next/headers";
 import { BuildingStorefrontIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/solid";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: 'Store',
+  };
 
 export default async function Page() {
     const cookieStore = cookies();

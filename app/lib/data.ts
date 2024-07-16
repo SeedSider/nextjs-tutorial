@@ -44,15 +44,16 @@ export async function fetchLatestInvoices() {
   noStore();
   try {
     const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
+      SELECT invoice_products.total_price, products.name, products.image_url, products.description, sale_invoices.id
+      FROM invoice_products
+      JOIN sale_invoices ON sale_invoices.id = invoice_products.invoice_id
+      JOIN products ON invoice_products.product_id = products.id
+      ORDER BY sale_invoices.invoice_date DESC
       LIMIT 5`;
 
     const latestInvoices = data.rows.map((invoice) => ({
       ...invoice,
-      amount: formatCurrency(invoice.amount),
+      amount: formatCurrency(invoice.total_price),
     }));
     return latestInvoices;
   } catch (error) {
@@ -67,29 +68,28 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
-
+    const invoiceCountPromise = sql`SELECT COUNT(*) FROM sale_invoices JOIN invoice_products ON sale_invoices.id = invoice_products.invoice_id`;
+    const customerCountPromise = sql`SELECT SUM(invoice_products.quantity) FROM invoice_products`;
+    const invoiceTotalPromise = sql`SELECT SUM(invoice_products.total_price) from sale_invoices JOIN invoice_products ON sale_invoices.id = invoice_products.invoice_id`;
+    const todayInvoicesPromise = sql`SELECT SUM(invoice_products.total_price) from sale_invoices JOIN invoice_products ON sale_invoices.id = invoice_products.invoice_id
+      WHERE date(sale_invoices.invoice_date) = CURRENT_DATE`;
     const data = await Promise.all([
       invoiceCountPromise,
       customerCountPromise,
-      invoiceStatusPromise,
+      invoiceTotalPromise,
+      todayInvoicesPromise
     ]);
 
     const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
+    const numberOfCustomers = Number(data[1].rows[0].sum ?? '0');
+    const totalInvoices = formatCurrency(data[2].rows[0].sum ?? '0');
+    const totalTodayInvoices = formatCurrency(data[3].rows[0].sum ?? '0');
 
     return {
       numberOfCustomers,
       numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
+      totalInvoices,
+      totalTodayInvoices,
     };
   } catch (error) {
     console.error('Database Error:', error);

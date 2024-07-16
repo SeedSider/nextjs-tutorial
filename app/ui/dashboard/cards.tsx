@@ -3,13 +3,14 @@ import {
   ClockIcon,
   UserGroupIcon,
   InboxIcon,
+  TagIcon,
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
 import { fetchCardData } from '@/app/lib/data';
 
 const iconMap = {
   collected: BanknotesIcon,
-  customers: UserGroupIcon,
+  customers: TagIcon,
   pending: ClockIcon,
   invoices: InboxIcon,
 };
@@ -18,19 +19,19 @@ export default async function CardWrapper() {
   const {
     numberOfInvoices,
     numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
+    totalInvoices,
+    totalTodayInvoices,
   } = await fetchCardData();
 
   return (
     <>
       {/* NOTE: comment in this code when you get to this point in the course */}
 
-      <Card title="Collected" value={totalPaidInvoices} type="collected" />
-      <Card title="Pending" value={totalPendingInvoices} type="pending" />
-      <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+      <Card title="Transaksi Hari ini" value={totalTodayInvoices} type="collected" />
+      <Card title="Total Transaksi" value={totalInvoices} type="pending" />
+      <Card title="Jumlah Transaksi" value={numberOfInvoices} type="invoices" />
       <Card
-        title="Total Customers"
+        title="Total Produk Terjual"
         value={numberOfCustomers}
         type="customers"
       />

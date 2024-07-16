@@ -238,7 +238,7 @@ export async function deleteProduct(id: string) {
 
 export async function createSaleInvoice(store:StoreForm, products: CartState[]) {
     const date = new Date().toISOString();
-    const totalPrice = products.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
+    const totalPrice = products.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
     try {
         const query = await sql`
             INSERT INTO sale_invoices (store_id, user_id, invoice_date, total_amount)
